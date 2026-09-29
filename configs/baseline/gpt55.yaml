@@ -1,0 +1,9 @@
+method: baseline
+model: gpt-5.5
+judge_model: claude-opus-4-6
+worlds: [gravity, yukawa, fractional, circle, three_species, dark_matter, ether, hubble, oscillator, extra_dimensions, coulomb_easy]
+seeds: [0, 1, 2, 3, 4]
+noise_frac: 0.05
+max_rounds: 16
+max_tokens: 8192
+context_max_chars: null
