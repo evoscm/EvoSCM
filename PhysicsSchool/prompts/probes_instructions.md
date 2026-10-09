@@ -50,17 +50,12 @@ Particle ordering is fixed: low indices = background population, the **last 5** 
 
 ```python
 def discovered_law(positions, velocities, duration):
+    # positions:  list of N_total [x, y] — initial positions of every particle (background + probes)
+    # velocities: list of N_total [vx, vy]
+    # duration:   float — simulate from t = 0 to t = duration
+    # return:     list of N_total [x, y] final positions
+    # NOTE: scoring is on the LAST 5 entries (the probes); the others are simulated for context
     return final_positions
 ```
-
-positions:  list of N_total [x, y] — initial positions of every particle (background + probes)
-
-velocities: list of N_total [vx, vy]
-
-duration:   float — simulate from t = 0 to t = duration
-
-return:     list of N_total [x, y] final positions
-
-NOTE: scoring is on the LAST 5 entries (the probes); the others are simulated for context
 
 Your function must simulate **all** particles forward (the background dynamics influence the probes through the field), but you are scored only on the final probe positions.

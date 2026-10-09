@@ -8,6 +8,7 @@ import threading
 from typing import Optional
 from scienceagent import llm_client
 from scienceagent.context_window import prepare_messages_for_context
+from scienceagent.response_protocol import validate_agent_reply
 from scienceagent.executor import SimulationExecutor
 
 MAX_ROUNDS = 10
@@ -19,9 +20,9 @@ class _FinalReplayTimeout(BaseException):
 
 
 _SYSTEM_PROMPT_PATH = "PhysicsSchool/prompts/_template_interactive.md"
-_DEFAULT_LAW_STUB = "def discovered_law(pos1, pos2, p1, p2, velocity2, duration):\n    return final_pos2, final_vel2\n"
+_DEFAULT_LAW_STUB = "def discovered_law(pos1, pos2, p1, p2, velocity2, duration):\n    # your best implementation\n    return final_pos2, final_vel2\n"
 _DEFAULT_EXPERIMENT_FORMAT = '<run_experiment>[{"p1": 1.0, "p2": 1.0, "pos2": [3.0, 0.0], "velocity2": [0.0, 0.0], "measurement_times": [0.5, 1.0, 2.0]}]</run_experiment>'
-_MSE_FIT_PROMPT_BLOCK = '## OPTIONAL TOOL — MSE FITTING OF YOUR CANDIDATE LAW\n\nAt the end of any round, you may include a <run_mse_fit> tag ALONGSIDE your\n<run_experiment> (or by itself) to ask the system to fit your candidate\nlaw\'s free parameters against the trajectory data you have already\ncollected this run. This is the same scipy.optimize-based optimisation that\nthe evaluator runs at the end of the mission, so use it to refine your law\nmid-discovery rather than waiting until submission.\n\nRules:\n- The fit only sees data from THIS run (filtered by run_id), not other runs.\n- An <run_mse_fit> call does NOT consume a round on its own — running it\n  alongside <run_experiment> still counts as one round.\n- You may include AT MOST one <run_mse_fit> per round.\n- The body of <run_mse_fit> must contain the SAME source you would put in\n  <final_law>: a `discovered_law(...)` function and (optionally) a\n  `fit_parameters()` function declaring init values and bounds for free\n  parameters. Without a `fit_parameters()` block the system reports the\n  loss of your current hard-coded constants but cannot tune them.\n- The system replies with a <mse_fit_output> JSON block containing\n  `loss_before`, `loss_after`, `fitted_params`, `declared_params`,\n  `n_training`, `training_mode`, and `error`. When paired counterfactuals\n  exist, `training_mode="paired_conversation"` means the optimizer used\n  branch-minus-factual effects with common noise cancelled, matching the\n  evaluator. Use fitted values to calibrate a structurally justified family;\n  never let a fit override controlled scaling or sign evidence by silently\n  changing that family.\n- Do NOT submit <run_mse_fit> in your final-law round — that round must\n  contain ONLY <final_law> and <explanation>.\n- If <run_mse_fit> reports an error (compile failure, invalid\n  fit_parameters spec, or no_training_trajectories), fix the law in the\n  next round before submitting <final_law>.\n\nExample:\n<run_mse_fit>\ndef discovered_law(pos1, pos2, p1, p2, velocity2, duration, **params):\n    import numpy as np\n    alpha = params.get("alpha", 0.5)\n    G     = params.get("G", 1.0)\n    return final_pos2, final_vel2\n\ndef fit_parameters():\n    return {\n        "alpha": {"init": 0.5, "bounds": [0.1, 1.5]},\n        "G":     {"init": 1.0, "bounds": [0.01, 10.0]},\n    }\n</run_mse_fit>\n'
+_MSE_FIT_PROMPT_BLOCK = '## OPTIONAL TOOL — MSE FITTING OF YOUR CANDIDATE LAW\n\nAt the end of any round, you may include a <run_mse_fit> tag ALONGSIDE your\n<run_experiment> (or by itself) to ask the system to fit your candidate\nlaw\'s free parameters against the trajectory data you have already\ncollected this run. This is the same scipy.optimize-based optimisation that\nthe evaluator runs at the end of the mission, so use it to refine your law\nmid-discovery rather than waiting until submission.\n\nRules:\n- The fit only sees data from THIS run (filtered by run_id), not other runs.\n- An <run_mse_fit> call does NOT consume a round on its own — running it\n  alongside <run_experiment> still counts as one round.\n- You may include AT MOST one <run_mse_fit> per round.\n- The body of <run_mse_fit> must contain the SAME source you would put in\n  <final_law>: a `discovered_law(...)` function and (optionally) a\n  `fit_parameters()` function declaring init values and bounds for free\n  parameters. Without a `fit_parameters()` block the system reports the\n  loss of your current hard-coded constants but cannot tune them.\n- The system replies with a <mse_fit_output> JSON block containing\n  `loss_before`, `loss_after`, `fitted_params`, `declared_params`,\n  `n_training`, `training_mode`, and `error`. When paired counterfactuals\n  exist, `training_mode="paired_conversation"` means the optimizer used\n  branch-minus-factual effects with common noise cancelled, matching the\n  evaluator. Use fitted values to calibrate a structurally justified family;\n  never let a fit override controlled scaling or sign evidence by silently\n  changing that family.\n- Do NOT submit <run_mse_fit> in your final-law round — that round must\n  contain ONLY <final_law> and <explanation>.\n- If <run_mse_fit> reports an error (compile failure, invalid\n  fit_parameters spec, or no_training_trajectories), fix the law in the\n  next round before submitting <final_law>.\n\nExample:\n<run_mse_fit>\ndef discovered_law(pos1, pos2, p1, p2, velocity2, duration, **params):\n    import numpy as np\n    alpha = params.get("alpha", 0.5)\n    G     = params.get("G", 1.0)\n    # ... your candidate integration ...\n    return final_pos2, final_vel2\n\ndef fit_parameters():\n    return {\n        "alpha": {"init": 0.5, "bounds": [0.1, 1.5]},\n        "G":     {"init": 1.0, "bounds": [0.01, 10.0]},\n    }\n</run_mse_fit>\n'
 
 
 def _load_system_prompt(prompt_path: str = None, instructions_path: str = None) -> str:
@@ -71,6 +72,8 @@ class DiscoveryAgent:
         context_max_chars: Optional[int] = None,
     ):
         self.model = model
+        if max_simulator_episodes is not None and int(max_simulator_episodes) < 0:
+            raise ValueError("max_simulator_episodes must be nonnegative")
         self.executor = executor
         self.mission = mission
         self.max_tokens = max_tokens
@@ -148,7 +151,7 @@ class DiscoveryAgent:
                 else remaining_episodes
             )
             if self.max_simulator_episodes is not None:
-                budget_msg = f"<simulator_budget>total={self.max_simulator_episodes},used={self.simulator_episodes_used},remaining={remaining_episodes},available={effective_remaining_episodes}</simulator_budget>\nEvery factual experiment and every counterfactual branch costs one simulator episode. Propose only actions that fit the remaining budget."
+                budget_msg = f"<simulator_budget>total={self.max_simulator_episodes},used={self.simulator_episodes_used},remaining={remaining_episodes},workflow_available={effective_remaining_episodes}</simulator_budget>\nEvery factual experiment and every counterfactual branch costs one simulator episode. Propose only actions that fit the remaining budget."
                 messages.append({"role": "user", "content": budget_msg})
                 round_entry["system_message"] = _join_sys(
                     round_entry["system_message"], budget_msg
@@ -201,6 +204,10 @@ class DiscoveryAgent:
                 )
             reply = self._complete(messages)
             round_entry["llm_reply"] = reply
+            if getattr(self, "_last_response_validation", None) is not None:
+                round_entry["response_validation"] = dict(
+                    self._last_response_validation
+                )
             if self.verbose:
                 print(f"\n[Science Agent]\n{reply}")
             messages.append({"role": "assistant", "content": reply})
@@ -469,12 +476,19 @@ class DiscoveryAgent:
                 self.context_compaction_log = []
             report["call_index"] = len(self.context_compaction_log) + 1
             self.context_compaction_log.append(report)
-        return llm_client.complete(
+        reply = llm_client.complete(
             model=self.model,
             messages=prepared,
             system=self._system,
             max_tokens=self.max_tokens,
         )
+        accepted, validation = validate_agent_reply(reply)
+        self._last_response_validation = validation
+        if validation is not None:
+            if not hasattr(self, "response_validation_log"):
+                self.response_validation_log = []
+            self.response_validation_log.append(validation)
+        return accepted
 
     @property
     def remaining_simulator_episodes(self) -> Optional[int]:

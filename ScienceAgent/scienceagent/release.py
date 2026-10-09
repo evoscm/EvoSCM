@@ -70,12 +70,13 @@ def run_session(
     model,
     judge_model=None,
     method="evoscm",
-    seed=0,
-    noise_frac=0.05,
-    max_rounds=16,
-    max_tokens=8192,
+    seed=None,
+    noise_frac=None,
+    max_rounds=None,
+    max_tokens=None,
     max_episodes=None,
     context_max_chars=None,
+    scm_max_candidates=8,
 ):
     require_world(world)
     if method not in ("baseline", "evoscm"):
@@ -83,6 +84,14 @@ def run_session(
     if max_episodes is not None and max_episodes < 0:
         raise ValueError("max_episodes must be nonnegative")
     judge_model = judge_model or "claude-opus-4-6"
+    if noise_frac is None:
+        noise_frac = 0.05
+    if max_rounds is None:
+        max_rounds = 16
+    if max_tokens is None:
+        max_tokens = 8192
+    if seed is None:
+        seed = 0
     noise_std = noise_frac * math.sqrt(WORLD_VARIANCES[world])
     config = get_world(world, engine="nbody", noise_std=noise_std, noise_seed=seed)
     pipeline = (
@@ -90,6 +99,7 @@ def run_session(
             world=world,
             mission=config["mission"],
             strict=True,
+            max_candidates=scm_max_candidates,
             observation_noise_std=noise_std,
             public_experiment_format=config["experiment_format"],
         )
@@ -149,6 +159,7 @@ def run_session(
             "noise_frac": noise_frac,
             "max_rounds": max_rounds,
             "max_tokens": max_tokens,
+            "scm_max_candidates": pipeline.max_candidates if pipeline else None,
             "context_max_chars": context_max_chars,
             "max_simulator_episodes": max_episodes,
             "simulator_episodes_used": agent.simulator_episodes_used,

@@ -1,8 +1,11 @@
 import json
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import pytest
 
+from scienceagent import llm_client
+from scienceagent.agent import DiscoveryAgent
 from scienceagent.release import WORLD_VARIANCES, require_world, run_session
 from scienceagent.worlds import WORLDS, get_world
 from scienceagent.transfer import _freeze_scm, _assert_no_forbidden_keys
@@ -176,3 +179,68 @@ def test_no_extension_placeholders():
     pipeline = SCMPipeline(world="gravity", mission="test")
     assert not hasattr(pipeline, "replicated_population_audit")
     assert "replicated_affine_audit" not in pipeline.to_dict()
+
+
+@pytest.mark.parametrize(
+    "method,rounds,noise,seed", [("baseline", 16, 0.05, 0), ("evoscm", 16, 0.05, 0)]
+)
+def test_method_defaults(method, rounds, noise, seed):
+    with patch("scienceagent.release.DiscoveryAgent") as cls:
+        cls.return_value.run.return_value = None
+        row = run_session("yukawa", "gpt-5.5", method=method)
+    assert cls.call_args.kwargs["max_rounds"] == rounds
+    assert cls.call_args.kwargs["max_tokens"] == 8192
+    assert row["noise_frac"] == noise
+    assert row["noise_seed"] == seed
+
+
+@pytest.mark.parametrize("method", ["baseline", "evoscm"])
+def test_explicit_protocol_preserved(method):
+    with patch("scienceagent.release.DiscoveryAgent") as cls:
+        cls.return_value.run.return_value = None
+        row = run_session(
+            "yukawa",
+            "gpt-5.5",
+            method=method,
+            seed=3,
+            noise_frac=0.0,
+            max_rounds=10,
+            max_tokens=16384,
+        )
+    assert row["noise_frac"] == 0.0
+    assert row["noise_seed"] == 3
+    assert cls.call_args.kwargs["max_rounds"] == 10
+    assert cls.call_args.kwargs["max_tokens"] == 16384
+
+
+def test_default_prompt_works_outside_repository(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    agent = DiscoveryAgent(
+        "mock", SimpleNamespace(), verbose=False, max_simulator_episodes=0
+    )
+    assert agent.remaining_simulator_episodes == 0
+    assert "World-Specific Instructions" in agent._system
+
+
+def test_negative_episode_budget_rejected():
+    with pytest.raises(ValueError, match="nonnegative"):
+        DiscoveryAgent("mock", SimpleNamespace(), max_simulator_episodes=-1)
+    with pytest.raises(ValueError, match="nonnegative"):
+        run_session("yukawa", "mock", method="baseline", max_episodes=-1)
+
+
+@pytest.mark.parametrize("value", [None, "", " "])
+def test_empty_api_response_fails(value, monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "offline-placeholder")
+    monkeypatch.setenv("EVOSCM_API_TRANSPORT", "responses")
+    sdk = MagicMock()
+    sdk.OpenAI.return_value.responses.create.return_value = SimpleNamespace(
+        output_text=value
+    )
+    with patch.dict("sys.modules", {"openai": sdk}), pytest.raises(
+        RuntimeError, match="no output_text"
+    ):
+        llm_client.complete("gpt-5.5", [])
+    assert sdk.OpenAI.call_args.kwargs["timeout"] == 300.0
+    assert sdk.OpenAI.call_args.kwargs["max_retries"] == 2
+    assert sdk.OpenAI.return_value.responses.create.call_count == 1

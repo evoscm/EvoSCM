@@ -50,17 +50,12 @@ Particle ordering is fixed: index 0 = centre, indices 1–10 = ring particles in
 
 ```python
 def discovered_law(positions, velocities, duration, **params):
+    # positions:  list of 11 [x, y] — initial positions of all particles (centre + ring)
+    # velocities: list of 11 [vx, vy]
+    # duration:   float — simulate from t = 0 to t = duration
+    # **params:   optional — fitted parameter values injected by the evaluator
+    # return:     list of 11 [x, y] final positions
     return final_positions
 ```
-
-positions:  list of 11 [x, y] — initial positions of all particles (centre + ring)
-
-velocities: list of 11 [vx, vy]
-
-duration:   float — simulate from t = 0 to t = duration
-
-**params:   optional — fitted parameter values injected by the evaluator
-
-return:     list of 11 [x, y] final positions
 
 The signature takes raw per-particle initial conditions (not `ring_radius` / `initial_tangential_velocity`) — your law must work from arbitrary positions and velocities, not just the symmetric ring configuration. The `**params` catch-all is optional (only needed if you declare fittable parameters via `fit_parameters()`).

@@ -1,9 +1,10 @@
 # EvoSCM: Scientific Belief Revision Through Causal Model Evolution and Experimentation
 
-[![Paper](https://img.shields.io/badge/📄_Paper-2563EB?style=for-the-badge)](https://evoscm.github.io/assets/preprint.pdf)
-[![arXiv](https://img.shields.io/badge/arXiv-B31B1B?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/2609.01526)
-[![Project Page](https://img.shields.io/badge/🌐_Project_Page-0F766E?style=for-the-badge)](https://evoscm.github.io/)
-[![BibTeX](https://img.shields.io/badge/📋_BibTeX-7C3AED?style=for-the-badge)](#license-and-citation)
+[![Project Page](https://img.shields.io/badge/%F0%9F%8C%90_Project-Page-0F766E.svg)](https://evoscm.github.io/)
+[![arXiv](https://img.shields.io/badge/arXiv-2609.01526-b31b1b.svg?logo=arxiv&logoColor=white)](https://arxiv.org/abs/2609.01526)
+[![Paper](https://img.shields.io/badge/%F0%9F%93%84_Paper-PDF-2563EB.svg)](https://evoscm.github.io/assets/preprint.pdf)
+[![BibTeX](https://img.shields.io/badge/%F0%9F%93%9A_Citation-BibTeX-7C3AED.svg)](#license-and-citation)
+[![License: MIT](https://img.shields.io/badge/%E2%9A%96%EF%B8%8F_License-MIT-blue.svg)](LICENSE)
 
 ## Abstract
 
@@ -92,7 +93,7 @@ The release uses the N-body backend. World definitions and reference answers bel
 | Output tokens | 8,192 per model request |
 | Seeds | 0–4 |
 | Observation noise | 5% of the world signal standard deviation |
-| Active SCM capacity | 8 |
+| SCM capacity | 8 |
 | Context character cap | Unset; configurable |
 
 | Metric | Definition |

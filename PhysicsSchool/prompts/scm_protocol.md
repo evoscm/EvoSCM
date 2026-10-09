@@ -96,6 +96,10 @@ backwards compatible.
 
 ### 1. SCM update required before each non-final experiment
 
+Include one `<scm_update>` JSON object. On round 1 initialise 3-6 genuinely
+different candidates. Later rounds may upsert a complete candidate or apply a
+small versioned patch.
+
 Round-one candidate weights are deliberately initialized uniformly: a
 commonsense `confidence` is recorded for audit but is not observational
 evidence. Do not assume the most familiar textbook mechanism is favoured until
@@ -305,6 +309,12 @@ hidden executor configuration and, when observation noise exists, common
 random numbers. This is a controlled simulator counterfactual, not permission
 to access hidden truth.
 
+The first index after `paired_effects` or `counterfactuals` is the branch
+index. Each branch is a singleton experiment batch, so the first index after
+`output_delta` or `output` must be `0`. For example, branch 4 is
+`/paired_effects/4/output_delta/0/velocity2/-1/0`, never
+`/paired_effects/0/output_delta/4/...`.
+
 The output also contains:
 
 ```json
@@ -408,7 +418,39 @@ Continue with a combined matched design until the blocker list is empty.
 
 ### 4. Final submission
 
+The final executable is checked deductively against the null-anchored causal
+responses already collected in this run. This consumes no new simulator
+episode: the runtime fits declared nuisance parameters, executes the proposed
+law for a very short interval from audited states, and compares its implied
+acceleration with the response graph. If sign, control scaling, radial
+normalization, time response, or vector conversion is inconsistent, you may
+receive a repair-only turn. In a power law, never use the acceleration measured
+at one non-unit radius as the global coefficient; divide out the identified
+controls and multiply by `r^q`, then make `fit_parameters` bounds straddle that
+normalized coefficient.
+
 In the final round, submit the ordinary `<final_law>` and `<explanation>` plus:
+
+```xml
+<scm_final>
+{
+  "selected_candidate_id": "H_power",
+  "remaining_alternatives": ["H_screened"],
+  "identified_mechanism": "concise structural mechanism",
+  "operator_or_symmetry": "operator/Green function or measured symmetry, with identifiability caveat",
+  "source_response_roles": "which controls source the effect and which set response/inertia",
+  "scalar_magnitude_law": "|effect| as a function of distance/time/properties",
+  "vector_law": "signed vector equation with unit-vector conversion checked",
+  "time_and_scale_regimes": "static versus time/history dependent, plus any near/far crossover",
+  "remaining_uncertainty": "what the experiments could not identify",
+  "evidence_summary": "which interventions and counterexamples decided it",
+  "noise_cancelled_scaling_check": "quote and reconcile the controlled p1/p2 exponents, local radius slopes, sign relations, and clock response",
+  "operator_correspondence_check": "name the physical operator/Green-function correspondence supported by those invariances, with alternatives and caveats",
+  "evidence_consistency_check": "how the final code and explanation preserve the selected candidate's defining features",
+  "numerical_robustness_check": "near-collision regularization, integrator success, and replay against collected trajectories"
+}
+</scm_final>
+```
 
 The final law remains the benchmark's executable prediction. The SCM record is
 an additional process-level artifact; good prose alone cannot compensate for

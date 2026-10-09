@@ -180,7 +180,7 @@ WORLDS = {
         "true_law_title": "True Laplacian (dark matter)",
         "optimal_explanation": "The system obeys a static 2D Laplacian field, ∇²φ = source, with force -∇φ on each particle, but contains hidden structure the agent cannot directly observe: 10 dark-matter particles with source coupling 5.0 — five times stronger than the visible population — whose positions are concealed. The 20 visible particles all have source coupling 1.0 and the 5 probes are neutral (coupling 0). Visible particles appear to accelerate toward empty regions because those regions actually contain unseen dark-matter sources, and probes respond to the combined visible+dark field.",
         "explanation_rubric": _RUBRIC_DARK_MATTER,
-        "law_stub": "def discovered_law(positions, velocities, duration):\n    return final_positions\n",
+        "law_stub": "def discovered_law(positions, velocities, duration):\n    # positions: list of 25 [x, y] coords relative to center\n    #   indices 0-19: visible background, 20-24: probes\n    # velocities: list of 25 [vx, vy]\n    # duration: float, simulate from t=0 to t=duration\n    # return: list of 25 [x, y] final positions\n    # NOTE: you are scored on the 5 PROBE trajectories (indices 20-24)\n    return final_positions\n",
         "experiment_format": '<run_experiment>[{"probe_positions": [[5,0],[0,5],[-5,0],[0,-5],[7,7]], "probe_velocities": [[0,0],[0,0],[0,0],[0,0],[0,0]], "measurement_times": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]}]</run_experiment>',
     },
     "three_species": {
@@ -192,7 +192,7 @@ WORLDS = {
         "true_law_title": "True Laplacian (three species)",
         "optimal_explanation": "Thirty-five particles interact through a static Laplacian field, ∇²φ = source, with acceleration -∇φ. The 30 background particles split into three hidden species: particles 0–9 with source coupling +1, particles 10–19 with +3 (strong attractors), and particles 20–29 with -2 (repulsive — they source a field that pushes other particles away rather than pulling them in). Particles 30–34 are neutral probes with zero coupling, feeling forces without sourcing the field.",
         "explanation_rubric": _RUBRIC_THREE_SPECIES,
-        "law_stub": "def discovered_law(positions, velocities, duration):\n    return final_positions\n",
+        "law_stub": "def discovered_law(positions, velocities, duration):\n    # positions: list of 35 [x, y] coords relative to center\n    # velocities: list of 35 [vx, vy]\n    # duration: float, simulate from t=0 to t=duration\n    # return: list of 35 [x, y] final positions\n    return final_positions\n",
         "experiment_format": '<run_experiment>[{"probe_positions": [[5,0],[0,5],[-5,0],[0,-5],[7,7]], "probe_velocities": [[0,0],[0,0],[0,0],[0,0],[0,0]], "measurement_times": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]}]</run_experiment>',
     },
     "ether": {
@@ -204,7 +204,7 @@ WORLDS = {
         "true_law_title": "True Laplacian + Ether drift",
         "optimal_explanation": "Twenty-six particles interact through a static 2D Laplacian field, ∇²φ = source, sourced only by the central anchor (index 0) with coupling 50. The 20 orbiters (masses cycled through 1, 2, 4) and 5 probes are test particles (zero source coupling) feeling -∇φ from the anchor. Layered on top is a uniform 'ether' field that exerts a body-force F = α·m·ŷ on every particle, with α ≈ 0.05; because the force is exactly proportional to mass, every particle picks up the same northward acceleration α regardless of mass — a parabolic drift common to anchor, orbiters, and probes alike, on top of the orbital motion.",
         "explanation_rubric": _RUBRIC_ETHER,
-        "law_stub": "def discovered_law(positions, velocities, masses, duration):\n    return final_positions\n",
+        "law_stub": "def discovered_law(positions, velocities, masses, duration):\n    # positions: list of 26 [x, y] coords relative to centre\n    # velocities: list of 26 [vx, vy]\n    # masses: list of 26 per-particle masses\n    # duration: float, simulate from t=0 to t=duration\n    # return: list of 26 [x, y] final positions\n    # NOTE: scoring focuses on the 5 PROBE trajectories (indices 21-25)\n    return final_positions\n",
         "experiment_format": '<run_experiment>[{"probe_positions": [[8,0],[0,8],[-8,0],[0,-8],[10,10]], "probe_velocities": [[0,0],[0,0],[0,0],[0,0],[0,0]], "probe_masses": [1.0, 1.0, 2.0, 4.0, 1.0], "measurement_times": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]}]</run_experiment>',
     },
     "hubble": {
@@ -216,7 +216,7 @@ WORLDS = {
         "true_law_title": "True Laplacian + Hubble flow",
         "optimal_explanation": "Twenty-six particles interact through a static 2D Laplacian field, ∇²φ = source, sourced only by the central anchor (index 0) with coupling 50. The 20 orbiters (masses cycled through 1, 2, 4) and 5 probes are test particles (zero source coupling) feeling -∇φ from the anchor. Layered on top is a Hubble-flow body-force that gives every particle an additional outward radial acceleration a = H · r with H ≈ 0.05, where r is the displacement from the centre. Because the force is mass-independent, the same H acts on every particle. The critical radius where Hubble outward push balances central inward gravity is r_crit = √(Q/(2πH)) ≈ 12.6: probes at smaller r remain bound and orbit (with slightly reduced effective gravity), while probes outside r_crit accelerate outward and escape.",
         "explanation_rubric": _RUBRIC_HUBBLE,
-        "law_stub": "def discovered_law(positions, velocities, masses, duration):\n    return final_positions\n",
+        "law_stub": "def discovered_law(positions, velocities, masses, duration):\n    # positions: list of 26 [x, y] coords relative to centre\n    # velocities: list of 26 [vx, vy]\n    # masses: list of 26 per-particle masses\n    # duration: float, simulate from t=0 to t=duration\n    # return: list of 26 [x, y] final positions\n    # NOTE: scoring focuses on the 5 PROBE trajectories (indices 21-25)\n    return final_positions\n",
         "experiment_format": '<run_experiment>[{"probe_positions": [[5,0],[10,0],[15,0],[18,0],[0,12]], "probe_velocities": [[0,0],[0,0],[0,0],[0,0],[0,0]], "probe_masses": [1.0, 1.0, 2.0, 4.0, 1.0], "measurement_times": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]}]</run_experiment>',
     },
     "circle": {
@@ -228,7 +228,7 @@ WORLDS = {
         "true_law_title": "True Fractional Laplacian (circle)",
         "optimal_explanation": "Eleven particles — one at the center plus ten arranged on a surrounding ring — interact through a static field governed by a fractional Laplacian operator -(-∇²)^α with α = 0.75. The force on each particle is -∇φ, where φ is sourced by all particles with uniform coupling. The non-local fractional operator produces a force-versus-distance law that is intermediate between the logarithmic 2D Laplacian and pure long-range behavior.",
         "explanation_rubric": _RUBRIC_CIRCLE,
-        "law_stub": "def discovered_law(positions, velocities, duration):\n    return final_positions\n",
+        "law_stub": "def discovered_law(positions, velocities, duration):\n    # positions: list of 11 [x, y] coords relative to center\n    # velocities: list of 11 [vx, vy]\n    # duration: float, simulate from t=0 to t=duration\n    # return: list of 11 [x, y] final positions\n    return final_positions\n",
         "experiment_format": '<run_experiment>[{"ring_radius": 5.0, "initial_tangential_velocity": 0.0, "measurement_times": [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]}]</run_experiment>',
     },
     "coulomb_easy": {
@@ -240,7 +240,7 @@ WORLDS = {
         "true_law_title": "True Coulomb (attractive)",
         "optimal_explanation": "Two particles interact through a central, attractive 1/r² force, F = k · p1 · p2 / r². Particle 1 is pinned at the origin and particle 2 (inertia 1) is accelerated along the line of separation with magnitude proportional to the product of the two charges. Underneath, the world uses standard Coulomb's law with hidden opposite signs (q_0 = +|p1|, q_1 = -|p2|), so attraction is guaranteed regardless of the input signs.",
         "explanation_rubric": _RUBRIC_COULOMB_EASY,
-        "law_stub": "def discovered_law(pos1, pos2, p1, p2, velocity2, duration):\n    return final_pos2, final_vel2\n",
+        "law_stub": "def discovered_law(pos1, pos2, p1, p2, velocity2, duration):\n    # pos1: [x, y] position of fixed particle 1 (always [0, 0])\n    # pos2: [x, y] initial position of particle 2\n    # p1, p2: scalar charges\n    # velocity2: [vx, vy] initial velocity of particle 2\n    # duration: float, simulate from t=0 to t=duration\n    # return: (final_pos2, final_vel2)\n    return final_pos2, final_vel2\n",
         "experiment_format": '<run_experiment>[{"p1": 1.0, "p2": 1.0, "pos2": [3.0, 0.0], "velocity2": [0.0, 0.5], "measurement_times": [1.0, 2.0, 3.0, 4.0, 5.0]}]</run_experiment>',
     },
 }
@@ -299,7 +299,7 @@ def get_world(name: str, engine: str = "field", **executor_overrides) -> dict:
             )
         executor_cls = _FIELD_EXECUTOR_CLASSES[executor_class_name]
     executor = executor_cls(**kwargs)
-    default_law_stub = "def discovered_law(pos1, pos2, p1, p2, velocity2, duration):\n    return final_pos2, final_vel2\n"
+    default_law_stub = "def discovered_law(pos1, pos2, p1, p2, velocity2, duration):\n    # your best implementation\n    return final_pos2, final_vel2\n"
     default_system_prompt = "PhysicsSchool/prompts/_template_interactive.md"
     default_experiment_format = '<run_experiment>[{"p1": 1.0, "p2": 1.0, "pos2": [3.0, 0.0], "velocity2": [0.0, 0.0], "measurement_times": [0.5, 1.0, 2.0]}]</run_experiment>'
     instructions_path = entry.get(

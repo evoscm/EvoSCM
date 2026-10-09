@@ -54,21 +54,14 @@ Each experiment returns:
 
 ```python
 def discovered_law(pos1, pos2, p1, p2, velocity2, duration, **params):
+    # pos1: [x, y] — always [0, 0] for these worlds
+    # pos2: [x, y] — initial position of particle 2
+    # p1, p2: scalar properties
+    # velocity2: [vx, vy] — initial velocity of particle 2
+    # duration: float — simulate from t = 0 to t = duration
+    # **params: optional — fitted parameter values injected by the evaluator
+    # return: (final_pos2, final_vel2)
     return final_pos2, final_vel2
 ```
-
-pos1: [x, y] — always [0, 0] for these worlds
-
-pos2: [x, y] — initial position of particle 2
-
-p1, p2: scalar properties
-
-velocity2: [vx, vy] — initial velocity of particle 2
-
-duration: float — simulate from t = 0 to t = duration
-
-**params: optional — fitted parameter values injected by the evaluator
-
-return: (final_pos2, final_vel2)
 
 The positional arguments must appear in exactly this order. `**params` is optional (only needed if you declare fittable parameters via `fit_parameters()`).

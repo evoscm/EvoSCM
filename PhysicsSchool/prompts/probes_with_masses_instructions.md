@@ -56,19 +56,13 @@ Particle ordering: index 0 = anchor, indices 1–20 = ring orbiters, indices 21�
 
 ```python
 def discovered_law(positions, velocities, masses, duration):
+    # positions:  list of 26 [x, y] — initial positions of every particle (anchor + orbiters + probes)
+    # velocities: list of 26 [vx, vy]
+    # masses:     list of 26 per-particle masses (these ARE the true masses — no need to discover them)
+    # duration:   float — simulate from t = 0 to t = duration
+    # return:     list of 26 [x, y] final positions
+    # NOTE: scoring is on indices 21-25 (the probes); the others are simulated for context
     return final_positions
 ```
-
-positions:  list of 26 [x, y] — initial positions of every particle (anchor + orbiters + probes)
-
-velocities: list of 26 [vx, vy]
-
-masses:     list of 26 per-particle masses (these ARE the true masses — no need to discover them)
-
-duration:   float — simulate from t = 0 to t = duration
-
-return:     list of 26 [x, y] final positions
-
-NOTE: scoring is on indices 21-25 (the probes); the others are simulated for context
 
 Your function must simulate **all 26** particles forward (the orbiters and anchor influence the probes through the field), but you are scored only on the final probe positions.

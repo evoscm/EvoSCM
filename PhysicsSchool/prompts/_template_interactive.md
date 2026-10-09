@@ -43,12 +43,11 @@ Skeleton:
 ```python
 from scipy.integrate import solve_ivp
 def rhs(t, y):
+    # unpack y → positions/velocities; compute accelerations from your force law
     return dydt
 sol = solve_ivp(rhs, (0.0, duration), y0, method="RK45", rtol=1e-4, atol=1e-4)
 final_state = sol.y[:, -1]
 ```
-
-unpack y → positions/velocities; compute accelerations from your force law
 If your law genuinely cannot be expressed as an ODE, vectorise with NumPy operations on whole arrays — never a tight Python loop over scalars.
 
 **Fittable Parameters (optional, recommended when you have uncertain constants):**
