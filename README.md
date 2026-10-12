@@ -3,20 +3,20 @@
 [![Project Page](https://img.shields.io/badge/%F0%9F%8C%90_Project-Page-0F766E.svg)](https://evoscm.github.io/)
 [![arXiv](https://img.shields.io/badge/arXiv-2609.01526-b31b1b.svg?logo=arxiv&logoColor=white)](https://arxiv.org/abs/2609.01526)
 [![Paper](https://img.shields.io/badge/%F0%9F%93%84_Paper-PDF-2563EB.svg)](https://evoscm.github.io/assets/preprint.pdf)
-[![BibTeX](https://img.shields.io/badge/%F0%9F%93%9A_Citation-BibTeX-7C3AED.svg)](#license-and-citation)
+[![BibTeX](https://img.shields.io/badge/%F0%9F%93%9A_Citation-BibTeX-7C3AED.svg)](#citation)
 [![License: MIT](https://img.shields.io/badge/%E2%9A%96%EF%B8%8F_License-MIT-blue.svg)](LICENSE)
 
-## Abstract
+## 📝 Abstract
 
 Scientific discovery depends on the ability to form hypotheses, test them through experiments, and revise them when evidence disagrees. Existing LLM agents support this process by improving their reasoning or actions, but their scientific beliefs are often scattered across free-form reasoning and difficult to update coherently. This makes it difficult to identify what failed, what should change, and whether revisions remain consistent with prior evidence. We introduce EvoSCM, which represents scientific beliefs as a population of structural causal model (SCM) hypotheses that can be tested and revised across experiments. EvoSCM formulates scientific discovery as a closed loop in which causal hypotheses guide experimentation and experimental outcomes drive causal model evolution. Competing SCM hypotheses make falsifiable predictions and guide discriminative experiments that separate alternative explanations. When observations contradict these predictions, EvoSCM distills discrepancies into correction rules identifying which aspects of the hypotheses fail to explain the evidence. These rules guide revisions to causal dependencies, latent factors, mechanisms, and parameters. Revised hypotheses are validated against accumulated evidence and carried forward to guide subsequent experiments, allowing scientific beliefs to evolve cumulatively. We evaluate EvoSCM across physics, chemistry and materials, and biology. It consistently outperforms baseline agents and existing evolution methods, yielding more accurate explanations and predictions with more effective use of experimental budgets. The evolved SCMs also transfer across base models, suggesting reusable scientific knowledge beyond any single model's reasoning process.
 
-## Method Overview
+## 🧠 Method Overview
 
 ![Figure 2: EvoSCM overview](assets/figures/method.webp)
 
 **Figure 2: Overview of EvoSCM.** EvoSCM maintains a population of competing SCM hypotheses and evolves it through a closed discovery loop: (1) *Causal Experiment Design:* the agent abductively interprets accumulated evidence, selects discriminative interventions, and commits to falsifiable predictions tested through experimentation; (2) *SCM Hypothesis Revision:* prediction–observation discrepancies are inductively distilled into correction rules that guide targeted revisions to causal structure and mechanisms, while revised hypotheses are deductively validated against accumulated evidence and structural consistency to form the next-round population.
 
-## Installation and API Configuration
+## ⚙️ Installation and API Configuration
 
 Run the following commands from the repository root:
 
@@ -44,7 +44,7 @@ Discovery and explanation judging make API requests. Generated scientific Python
 
 The default explanation judge is `claude-opus-4-6`, independent of the discovery model, and uses `CLAUDE_BASE_URL` and `CLAUDE_API_KEY`. Numerical MSE evaluation runs locally and does not use the judge model.
 
-## Single Discovery Session
+## 🔬 Single Discovery Session
 
 ```bash
 python scripts/run_discovery.py --world yukawa --method evoscm --model gpt-5.5 --judge-model claude-opus-4-6 --seed 0 --max-rounds 16 --output outputs/evoscm/yukawa_seed0.json
@@ -52,7 +52,7 @@ python scripts/run_discovery.py --world yukawa --method evoscm --model gpt-5.5 -
 
 For Direct Baseline, use `--method baseline`. The output includes the discovered executable law, explanation, evaluation, per-round record, simulator episode count, and the evolved SCM state when enabled. Output paths must not already exist. Use `--max-episodes` to impose a discovery simulator budget.
 
-## Experiments and Evaluation
+## 📊 Experiments and Evaluation
 
 ```bash
 python scripts/run_benchmark.py --config configs/baseline/gpt55.yaml --output-dir outputs/baseline
@@ -63,7 +63,7 @@ python scripts/evaluate.py --input-dir outputs/evoscm --output outputs/evoscm_su
 
 The default matrix contains 11 worlds and five seeds. Runs are sequential. When `--baseline-dir` is supplied, each EvoSCM session inherits the corresponding Baseline protocol and receives a discovery episode cap equal to that Baseline session's realized cost. Actual rounds may differ. This is simulator-budget matching, not equal token or dollar expenditure.
 
-## Cross-Model SCM Transfer
+## 🔄 Cross-Model SCM Transfer
 
 Export a source model's learned SCM:
 
@@ -79,7 +79,7 @@ python scripts/run_transfer.py run --scm outputs/transfer/yukawa_seed0_scm.json 
 
 Use the target model identifier advertised by your endpoint. Compilation uses the target endpoint; explanation judging uses the separate Claude endpoint. The source SCM export retains up to six candidate hypotheses, including the selected hypothesis, but excludes the source executable law, raw experiments, transcripts, evaluation, and reference answers. The target model compiles the frozen SCM without new discovery experiments. Evaluation still runs held-out simulator cases and an explanation judge.
 
-## Worlds, Configuration, and Metrics
+## 🌍 Worlds, Configuration, and Metrics
 
 Supported worlds:
 
@@ -103,7 +103,7 @@ The release uses the N-body backend. World definitions and reference answers bel
 | pass@k | World-averaged success estimator using the available independent seed runs |
 | simulator episodes | Discovery simulator calls, counting factual and intervention branches separately |
 
-## Analysis
+## 🔍 Analysis
 
 1. EvoSCM achieves efficient scientific discovery and evolves reusable scientific knowledge that transfers across base models.
 
@@ -123,9 +123,15 @@ The release uses the N-body backend. World definitions and reference answers bel
 
 **Figure 4: SCM hypothesis evolution on the Yukawa world in DiscoverPhysics.** EvoSCM progressively recovers the 2D Yukawa ground-truth law through physically meaningful intermediate states, rather than merely fitting parameters along a smooth refinement path. (1) *Round 9:* the agent starts from an embryonic Coulomb-like hypothesis (**a**<sub>t</sub> ∝ 1/r<sub>t</sub>); (2) *Round 30:* a revision introduces a screening factor S<sub>t</sub> = K<sub>1</sub>(r<sub>t</sub>/λ)/(2πλ), coinciding with the Yukawa screening mechanism, resolving intermediate-range overprediction; (3) *Round 59:* a further revision introduces a softened distance ρ<sub>t</sub> = √(r<sub>t</sub><sup>2</sup> + ε<sup>2</sup>), coinciding with the finite core model, resolving residual short-range discrepancies.
 
-## License and Citation
+## ⚖️ License
 
 The implementation is distributed under the [MIT License](LICENSE). The simulator and discovery infrastructure build on [DiscoverPhysics](https://github.com/SampsonML/DiscoverPhysics).
+
+<a id="citation"></a>
+
+## 📚 Citation
+
+If our work helps your research, please consider citing our paper, thanks. The following are BibTeX references:
 
 ```bibtex
 @article{zhao2026evoscm,
